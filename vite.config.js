@@ -4,6 +4,7 @@ import vue from '@vitejs/plugin-vue'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: '/pretext-pokemon/',
   plugins: [vue()],
   resolve: {
     alias: {
@@ -11,3 +12,4 @@ export default defineConfig({
     }
   }
 })
+
