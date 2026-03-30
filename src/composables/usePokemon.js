@@ -15,9 +15,10 @@ export function usePokemon(containerBounds) {
     dragTarget = pokemon;
     dragOffset.x = e.clientX - pokemon.x;
     dragOffset.y = e.clientY - pokemon.y;
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseup', onMouseUp);
+    window.addEventListener('pointermove', onMouseMove);
+    window.addEventListener('pointerup', onMouseUp);
   };
+
 
   const onMouseMove = (e) => {
     if (dragTarget) {
@@ -75,9 +76,10 @@ export function usePokemon(containerBounds) {
     if (animationFrameId) {
       cancelAnimationFrame(animationFrameId);
     }
-    window.removeEventListener('mousemove', onMouseMove);
-    window.removeEventListener('mouseup', onMouseUp);
+    window.removeEventListener('pointermove', onMouseMove);
+    window.removeEventListener('pointerup', onMouseUp);
   });
+
 
   return {
     pokemons,

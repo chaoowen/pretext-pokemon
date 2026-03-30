@@ -18,10 +18,12 @@ const onMouseDown = (e) => {
       left: `${pokemon.x}px`,
       top: `${pokemon.y}px`,
       width: `${pokemon.width}px`,
-      height: `${pokemon.height}px`
+      height: `${pokemon.height}px`,
+      touchAction: 'none'
     }"
-    @mousedown="onMouseDown"
+    @pointerdown="onMouseDown"
   >
+
     <img :src="pokemon.img" class="w-full h-full object-contain drop-shadow-lg" draggable="false" />
   </div>
 </template>
