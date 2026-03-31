@@ -2,13 +2,14 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import { getImageAlphaMask } from '../utils/imageAnalysis';
 
 // Import all images from assets
-const images = import.meta.glob('../assets/images/*.png', { eager: true, as: 'url' });
+const images = import.meta.glob('../assets/images/*.png', { eager: true });
 const maskCache = new Map();
 
-const allAvailablePokemons = Object.entries(images).map(([path, url]) => ({
+const allAvailablePokemons = Object.entries(images).map(([path, mod]) => ({
   name: path.split('/').pop().replace('.png', ''),
-  url
+  url: mod.default
 }));
+
 
 const SPEED_MULTIPLIER = 1.5;
 

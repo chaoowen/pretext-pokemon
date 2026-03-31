@@ -6,11 +6,18 @@
  * @returns {Promise<Array<{x1: number, x2: number} | null>>} - An array of masks for each y-pixel
  */
 export async function getImageAlphaMask(url, targetWidth, targetHeight) {
+  if (!url) return null;
   return new Promise((resolve, reject) => {
     const img = new Image();
-    img.crossOrigin = 'anonymous';
+    
+    // Only set crossOrigin for external URLs that are not data URIs
+    if (!url.startsWith('data:') && !url.startsWith(window.location.origin)) {
+      img.crossOrigin = 'anonymous';
+    }
+    
     img.onload = () => {
       const canvas = document.createElement('canvas');
+
       canvas.width = targetWidth;
       canvas.height = targetHeight;
       const ctx = canvas.getContext('2d', { willReadFrequently: true });
