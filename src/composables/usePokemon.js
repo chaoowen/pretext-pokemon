@@ -105,30 +105,85 @@ export function usePokemon(containerBounds) {
     const h = containerBounds.value.height;
 
     if (w > 0 && h > 0) {
-      pokemons.value.forEach(p => {
+      const activePoks = pokemons.value;
+      
+      // Move phase
+      activePoks.forEach(p => {
         if (!p.isDragging) {
           p.x += p.vx;
           p.y += p.vy;
 
-          // Bounce
-          if (p.x < 0) {
-            p.x = 0;
-            p.vx *= -1;
-          } else if (p.x + p.width > w) {
-            p.x = w - p.width;
-            p.vx *= -1;
-          }
-
-          if (p.y < 0) {
-            p.y = 0;
-            p.vy *= -1;
-          } else if (p.y + p.height > h) {
-            p.y = h - p.height;
-            p.vy *= -1;
-          }
+          // Wall Bounce
+          if (p.x < 0) { p.x = 0; p.vx *= -1; }
+          else if (p.x + p.width > w) { p.x = w - p.width; p.vx *= -1; }
+          if (p.y < 0) { p.y = 0; p.vy *= -1; }
+          else if (p.y + p.height > h) { p.y = h - p.height; p.vy *= -1; }
         }
       });
+
+      // Collision phase (between pokemons)
+      for (let i = 0; i < activePoks.length; i++) {
+        for (let j = i + 1; j < activePoks.length; j++) {
+          const p1 = activePoks[i];
+          const p2 = activePoks[j];
+
+          // Use circular collision for smoother "pushing"
+          const r1 = p1.width / 2;
+          const r2 = p2.width / 2;
+          const c1x = p1.x + r1;
+          const c1y = p1.y + r1;
+          const c2x = p2.x + r2;
+          const c2y = p2.y + r2;
+
+          const dx = c2x - c1x;
+          const dy = c2y - c1y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          const minDist = r1 + r2;
+
+          if (dist < minDist && dist > 0) {
+            // Collision detected!
+            const nx = dx / dist; // normal x
+            const ny = dy / dist; // normal y
+            const overlap = minDist - dist;
+
+            // 1. Resolve overlap (push them apart)
+            // If p1 is dragging, only move p2. If neither or both (not possible usually), move both.
+            if (p1.isDragging) {
+              p2.x += nx * overlap;
+              p2.y += ny * overlap;
+              // Also update p2 velocity to "bounce" away from the dragged object
+              p2.vx = nx * Math.max(Math.abs(p2.vx), 2);
+              p2.vy = ny * Math.max(Math.abs(p2.vy), 2);
+            } else if (p2.isDragging) {
+              p1.x -= nx * overlap;
+              p1.y -= ny * overlap;
+              p1.vx = -nx * Math.max(Math.abs(p1.vx), 2);
+              p1.vy = -ny * Math.max(Math.abs(p1.vy), 2);
+            } else {
+              // Both are moving freely
+              p1.x -= nx * (overlap / 2);
+              p1.y -= ny * (overlap / 2);
+              p2.x += nx * (overlap / 2);
+              p2.y += ny * (overlap / 2);
+
+              // 2. Simple Elastic Collision (Swap velocity components along the normal)
+              const p1vn = p1.vx * nx + p1.vy * ny;
+              const p2vn = p2.vx * nx + p2.vy * ny;
+
+              // Only swap if they are moving towards each other
+              if (p1vn - p2vn > 0) {
+                const impulse = p1vn - p2vn;
+                p1.vx -= impulse * nx;
+                p1.vy -= impulse * ny;
+                p2.vx += impulse * nx;
+                p2.vy += impulse * ny;
+              }
+            }
+          }
+        }
+      }
     }
+
     animationFrameId = requestAnimationFrame(updatePositions);
   };
 
