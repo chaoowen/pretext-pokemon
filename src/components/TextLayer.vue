@@ -5,7 +5,7 @@ defineProps({
 });
 </script>
 
-<template>
+<template> 
   <div class="absolute inset-0 z-0">
     <span
       v-for="line in lines"
@@ -15,10 +15,12 @@ defineProps({
         left: `${line.x}px`,
         top: `${line.y}px`,
         height: `${lineHeight}px`,
-        lineHeight: `${lineHeight}px`
+        lineHeight: `${lineHeight}px`,
+        color: 'gray'
       }"
     >
       {{ line.text }}
     </span>
   </div>
 </template>
+

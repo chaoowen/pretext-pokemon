@@ -8,14 +8,21 @@ import AppHeader from './components/AppHeader.vue';
 import AppFooter from './components/AppFooter.vue';
 import TextLayer from './components/TextLayer.vue';
 import PokemonItem from './components/PokemonItem.vue';
+import PokemonSelector from './components/PokemonSelector.vue';
 
 // --- State ---
 const containerRef = ref(null);
 const containerBounds = ref({ width: 0, height: 0 });
 
 // --- Composables ---
-const { pokemons, onMouseDown: handleDragStart } = usePokemon(containerBounds);
+const { 
+  pokemons, 
+  allAvailablePokemons, 
+  onMouseDown: handleDragStart, 
+  togglePokemon 
+} = usePokemon(containerBounds);
 const { textLines, lineHeight } = useTextLayout(containerBounds, pokemons);
+
 
 // --- Lifecycle ---
 const updateBounds = () => {
@@ -38,22 +45,28 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div ref="containerRef" class="relative w-full h-full overflow-hidden bg-gray-900 text-gray-100 font-inter select-none">
-    <AppHeader />
+  <div class="flex flex-col h-screen w-screen overflow-hidden bg-gray-900 text-gray-100 font-inter select-none">
+    <!-- Main Game Area -->
+    <div ref="containerRef" class="relative flex-1 w-full overflow-hidden">
+      <TextLayer 
+        :lines="textLines" 
+        :line-height="lineHeight" 
+      />
 
-    <TextLayer 
-      :lines="textLines" 
-      :line-height="lineHeight" 
+      <PokemonItem 
+        v-for="p in pokemons" 
+        :key="p.id" 
+        :pokemon="p" 
+        @dragstart="handleDragStart($event, p)"
+      />
+    </div>
+
+    <!-- Bottom Selector Area -->
+    <PokemonSelector 
+      :available-pokemons="allAvailablePokemons"
+      :active-ids="pokemons.map(p => p.id)"
+      @toggle="togglePokemon"
     />
-
-    <PokemonItem 
-      v-for="p in pokemons" 
-      :key="p.id" 
-      :pokemon="p" 
-      @dragstart="handleDragStart($event, p)"
-    />
-
-    <AppFooter :line-count="textLines.length" />
   </div>
 </template>
 

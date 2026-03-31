@@ -1,12 +1,75 @@
 import { ref, onMounted, onUnmounted } from 'vue';
+import { getImageAlphaMask } from '../utils/imageAnalysis';
+
+// Import all images from assets
+const images = import.meta.glob('../assets/images/*.png', { eager: true, as: 'url' });
+const maskCache = new Map();
+
+const allAvailablePokemons = Object.entries(images).map(([path, url]) => ({
+  name: path.split('/').pop().replace('.png', ''),
+  url
+}));
+
+const SPEED_MULTIPLIER = 1.5;
 
 export function usePokemon(containerBounds) {
-  const pokemons = ref([
-    { id: 1, x: 100, y: 100, width: 80, height: 80, vx: 1, vy: 1, isDragging: false, img: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png' },
-    { id: 2, x: 300, y: 200, width: 80, height: 80, vx: -1.2, vy: 0.8, isDragging: false, img: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/6.png' }
-  ]);
+
+  const pokemons = ref([]);
+
+  // Initialize with a default set after masks are ready
+  onMounted(async () => {
+    // Pre-analyze all images
+    await Promise.all(allAvailablePokemons.map(async (p) => {
+      try {
+        const mask = await getImageAlphaMask(p.url, 80, 80);
+        maskCache.set(p.name, mask);
+      } catch (e) {
+        console.error(`Failed to analyze ${p.name}`, e);
+      }
+    }));
+
+    // Set initial pokemons
+    allAvailablePokemons.slice(0, 2).forEach((p, i) => {
+      pokemons.value.push({
+        id: p.name,
+        x: 100 + i * 200,
+        y: 100 + i * 100,
+        width: 80,
+        height: 80,
+        vx: (Math.random() - 0.5) * SPEED_MULTIPLIER,
+        vy: (Math.random() - 0.5) * SPEED_MULTIPLIER,
+        isDragging: false,
+        img: p.url,
+        mask: maskCache.get(p.name)
+      });
+    });
+  });
+
+  const togglePokemon = (pokemonInfo) => {
+    const index = pokemons.value.findIndex(p => p.id === pokemonInfo.name);
+    if (index !== -1) {
+      pokemons.value.splice(index, 1);
+    } else {
+      const w = containerBounds.value.width || 500;
+      const h = containerBounds.value.height || 500;
+      pokemons.value.push({
+        id: pokemonInfo.name,
+        x: Math.random() * (w - 80),
+        y: Math.random() * (h - 80),
+        width: 80,
+        height: 80,
+        vx: (Math.random() - 0.5) * SPEED_MULTIPLIER,
+        vy: (Math.random() - 0.5) * SPEED_MULTIPLIER,
+        isDragging: false,
+        img: pokemonInfo.url,
+        mask: maskCache.get(pokemonInfo.name)
+      });
+    }
+  };
+
 
   let dragTarget = null;
+
   let dragOffset = { x: 0, y: 0 };
   let animationFrameId = null;
 
@@ -32,8 +95,8 @@ export function usePokemon(containerBounds) {
       dragTarget.isDragging = false;
       dragTarget = null;
     }
-    window.removeEventListener('mousemove', onMouseMove);
-    window.removeEventListener('mouseup', onMouseUp);
+    window.removeEventListener('pointermove', onMouseMove);
+    window.removeEventListener('pointerup', onMouseUp);
   };
 
   const updatePositions = () => {
@@ -83,6 +146,9 @@ export function usePokemon(containerBounds) {
 
   return {
     pokemons,
-    onMouseDown
+    allAvailablePokemons,
+    onMouseDown,
+    togglePokemon
   };
 }
+

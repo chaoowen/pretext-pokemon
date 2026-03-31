@@ -23,9 +23,36 @@ export function useTextLayout(containerBounds, pokemons) {
       const yEnd = currentY + LINE_HEIGHT;
 
       const obstacles = pokemons.value
-        .filter(p => p.y < yEnd && p.y + p.height > yStart)
-        .map(p => ({ x1: p.x, x2: p.x + p.width }))
+        .map(p => {
+          // Find the intersection of the pokemon's vertical range and the text line's y-range
+          const pokemonYStart = Math.max(0, Math.floor(yStart - p.y));
+          const pokemonYEnd = Math.min(p.height, Math.floor(yEnd - p.y));
+          
+          if (pokemonYEnd <= pokemonYStart || pokemonYEnd < 0 || pokemonYStart >= p.height) {
+            return null;
+          }
+
+          if (!p.mask) return { x1: p.x, x2: p.x + p.width };
+
+          // Find the min x1 and max x2 among all rows in this band
+          let minX1 = Infinity;
+          let maxX2 = -Infinity;
+          let hasSolidRow = false;
+
+          for (let py = pokemonYStart; py < pokemonYEnd; py++) {
+            const row = p.mask[py];
+            if (row) {
+              minX1 = Math.min(minX1, p.x + row.x1);
+              maxX2 = Math.max(maxX2, p.x + row.x2);
+              hasSolidRow = true;
+            }
+          }
+
+          return hasSolidRow ? { x1: minX1, x2: maxX2 } : null;
+        })
+        .filter(obs => obs !== null)
         .sort((a, b) => a.x1 - b.x1);
+
 
       let segments = [];
       let lastX = 0;
