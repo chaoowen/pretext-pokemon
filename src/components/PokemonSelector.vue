@@ -8,12 +8,12 @@ defineEmits(['toggle']);
 </script>
 
 <template>
-  <div class="w-full bg-gray-600 py-4 px-4 overflow-hidden">
+  <div class="w-full bg-[#D7CDD5] py-4 px-4 overflow-hidden">
     <div class="flex items-center gap-3 px-4 py-2 bg-gray-600 backdrop-blur-3xl rounded-3xl overflow-x-auto max-w-full scrollbar-hide">
       <div
         v-for="p in availablePokemons"
         :key="p.name"
-        class="relative flex-none w-[60px] h-[60px] flex items-center justify-center transition-all duration-300 rounded-0 cursor-pointer"
+        class="relative flex-none w-[60px] md:w-[100px] h-[60px] md:h-[100px] flex items-center justify-center transition-all duration-300 rounded-0 cursor-pointer"
         @click="$emit('toggle', p)"
       >
         <img 

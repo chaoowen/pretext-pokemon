@@ -45,7 +45,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="flex flex-col h-screen w-screen overflow-hidden bg-gray-900 text-gray-100 font-inter select-none">
+  <div class="flex flex-col h-screen w-screen overflow-hidden bg-[#1F2C1C] text-gray-100 font-inter select-none">
     <!-- Main Game Area -->
     <div ref="containerRef" class="relative flex-1 w-full overflow-hidden">
       <TextLayer 

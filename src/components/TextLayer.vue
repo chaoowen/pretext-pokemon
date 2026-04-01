@@ -16,7 +16,10 @@ defineProps({
         top: `${line.y}px`,
         height: `${lineHeight}px`,
         lineHeight: `${lineHeight}px`,
-        color: 'gray'
+        color: '#DFDCD5',
+        opacity: 0.4,
+        fontFamily: '&quot;Doto&quot;, sans-serif',
+        fontWeight: 500
       }"
     >
       {{ line.text }}
